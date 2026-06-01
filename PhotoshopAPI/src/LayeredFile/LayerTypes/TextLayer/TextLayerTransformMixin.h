@@ -331,8 +331,13 @@ public:
 		{
 			throw std::runtime_error("TextLayer::set_position() failed: transform is unavailable");
 		}
+		const double dx = x - xform[4];
+		const double dy = y - xform[5];
 		xform[4] = x; xform[5] = y;
 		set_transform(xform);
+
+		self()->center_x(self()->center_x() + static_cast<float>(dx));
+		self()->center_y(self()->center_y() + static_cast<float>(dy));
 	}
 
 	void reset_transform()

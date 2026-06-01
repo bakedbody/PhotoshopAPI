@@ -143,6 +143,27 @@ TEST_CASE("Transform: set_transform writes and reads back correctly")
 	CHECK(readback[5] == doctest::Approx(99.0).epsilon(1e-10));
 }
 
+TEST_CASE("Transform: set_position also translates layer bounds center")
+{
+	const auto fixture = std::filesystem::current_path() / "documents" / "TextLayers" / "TextLayers_Basic.psd";
+	auto file = LayeredFile<bpp8_t>::read(fixture);
+	auto layer = find_text_layer(file, "SimpleASCII");
+	REQUIRE(layer != nullptr);
+
+	const auto original_position = layer->position();
+	const double dx = 12.0;
+	const double dy = -7.0;
+	const float original_center_x = layer->center_x();
+	const float original_center_y = layer->center_y();
+
+	CHECK_NOTHROW(layer->set_position(original_position.first + dx, original_position.second + dy));
+
+	CHECK(layer->transform_tx().value() == doctest::Approx(original_position.first + dx));
+	CHECK(layer->transform_ty().value() == doctest::Approx(original_position.second + dy));
+	CHECK(layer->center_x() == doctest::Approx(original_center_x + static_cast<float>(dx)));
+	CHECK(layer->center_y() == doctest::Approx(original_center_y + static_cast<float>(dy)));
+}
+
 TEST_CASE("Transform: set_transform_xx/yy individual writers work")
 {
 	const auto fixture = std::filesystem::current_path() / "documents" / "TextLayers" / "TextLayers_Basic.psd";
