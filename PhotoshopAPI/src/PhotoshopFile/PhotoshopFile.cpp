@@ -26,6 +26,9 @@ void PhotoshopFile::read(File& document, ProgressCallback& callback)
 	m_ImageResources.read(document, m_ColorModeData.offset() + m_ColorModeData.size());
 
 	m_LayerMaskInfo.read(document, m_Header, callback, m_ImageResources.offset() + m_ImageResources.size());
+	const uint64_t layerMaskLengthMarker = m_Header.m_Version == Enum::Version::Psd ? 4u : 8u;
+	const uint64_t imageDataOffset = m_LayerMaskInfo.offset() + layerMaskLengthMarker + m_LayerMaskInfo.size();
+	m_ImageData.read(document, m_Header, imageDataOffset);
 }
 
 

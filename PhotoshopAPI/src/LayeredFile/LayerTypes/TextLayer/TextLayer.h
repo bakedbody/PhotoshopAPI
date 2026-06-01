@@ -84,6 +84,7 @@ struct TextLayer :
 	TextLayer(const LayerRecord& layerRecord, ChannelImageData& channelImageData, const FileHeader& header)
 		: Layer<T>(layerRecord, channelImageData, header)
 	{
+		generate_channel_image_data_from_read(channelImageData, layerRecord.m_ChannelInformation);
 		if (!layerRecord.m_AdditionalLayerInfo.has_value())
 		{
 			return;

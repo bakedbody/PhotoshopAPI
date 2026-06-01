@@ -28,18 +28,18 @@ void TaggedBlock::read(File& document, const FileHeader& header, const uint64_t 
 	if (Enum::isTaggedBlockSizeUint64(m_Key) && header.m_Version == Enum::Version::Psb)
 	{
 		uint64_t length = ReadBinaryData<uint64_t>(document);
-		length = RoundUpToMultiple<uint64_t>(length, padding);
 		m_Length = length;
 		m_Data = std::vector<std::byte>(length);
 		document.read(std::span<uint8_t>(reinterpret_cast<uint8_t*>(m_Data.data()), m_Data.size()));
+		document.skip(RoundUpToMultiple<uint64_t>(length, padding) - length);
 	}
 	else
 	{
 		uint32_t length = ReadBinaryData<uint32_t>(document);
-		length = RoundUpToMultiple<uint32_t>(length, padding);
 		m_Length = length;
 		m_Data = std::vector<std::byte>(length);
 		document.read(std::span<uint8_t>(reinterpret_cast<uint8_t*>(m_Data.data()), m_Data.size()));
+		document.skip(RoundUpToMultiple<uint32_t>(length, padding) - length);
 	}
 }
 
@@ -62,13 +62,15 @@ void TaggedBlock::write(File& document, [[maybe_unused]] const FileHeader& heade
 
 	if (isTaggedBlockSizeUint64(m_Key) && header.m_Version == Enum::Version::Psb)
 	{
-		Impl::ScopedLengthBlock<uint64_t> len_block(document, padding);
+		WriteBinaryData<uint64_t>(document, static_cast<uint64_t>(m_Data.size()));
 		WriteBinaryArray<std::byte>(document, m_Data);
+		WritePadddingBytes(document, RoundUpToMultiple<uint64_t>(static_cast<uint64_t>(m_Data.size()), padding) - m_Data.size());
 	}
 	else
 	{
-		Impl::ScopedLengthBlock<uint32_t> len_block(document, padding);
+		WriteBinaryData<uint32_t>(document, static_cast<uint32_t>(m_Data.size()));
 		WriteBinaryArray<std::byte>(document, m_Data);
+		WritePadddingBytes(document, RoundUpToMultiple<uint32_t>(static_cast<uint32_t>(m_Data.size()), padding) - m_Data.size());
 	}
 }
 

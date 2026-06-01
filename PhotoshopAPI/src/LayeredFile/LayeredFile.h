@@ -151,6 +151,8 @@ struct LayeredFile
 	/// purposes.
 	std::vector<std::shared_ptr<TaggedBlock>> unparsed_blocks() const noexcept { return m_UnparsedBlocks; }
 
+	ImageData image_data() const noexcept { return m_ImageData; }
+
 	LayeredFile() = default;
 
 	/// \brief Constructs a LayeredFile instance from a Photoshop file.
@@ -169,6 +171,7 @@ struct LayeredFile
 		m_ColorMode = document->m_Header.m_ColorMode;
 		m_Width = document->m_Header.m_Width;
 		m_Height = document->m_Header.m_Height;
+		ImageData preservedImageData = document->m_ImageData;
 
 		// Extract the ICC Profile if it exists on the document, otherwise it will simply be empty
 		m_ICCProfile = _Impl::read_icc_profile(document.get());
@@ -181,6 +184,7 @@ struct LayeredFile
 		}
 
 		m_Layers = _Impl::template build_layer_hierarchy<T>(*this, std::move(document));
+		m_ImageData = std::move(preservedImageData);
 		if (m_Layers.size() == 0)
 		{
 			PSAPI_LOG_ERROR("LayeredFile", "Read an invalid PhotoshopFile as it does not contain any layers. Is the only layer in the scene locked? This is not supported by the PhotoshopAPI");
@@ -691,6 +695,8 @@ private:
 	/// Stores all unparsed tagged blocks that we want to pass through on read/write.
 	std::vector<std::shared_ptr<TaggedBlock>> m_UnparsedBlocks;
 
+	ImageData m_ImageData;
+
 	std::vector<std::shared_ptr<Layer<T>>> generate_flattened_layers_impl(const LayerOrder order)
 	{
 		if (order == LayerOrder::forward)
@@ -773,7 +779,11 @@ std::unique_ptr<PhotoshopFile> layered_to_photoshop(LayeredFile<T>&& layered_fil
 	ColorModeData colorModeData = generate_colormodedata<T>(layered_file);
 	ImageResources imageResources = generate_imageresources<T>(layered_file);
 	LayerAndMaskInformation lrMaskInfo = generate_layermaskinfo<T>(layered_file, file_path);
-	ImageData imageData = ImageData(layered_file.num_channels());
+	ImageData imageData = layered_file.image_data();
+	if (!imageData.has_preserved_data())
+	{
+		imageData = ImageData(layered_file.num_channels());
+	}
 
 	return std::make_unique<PhotoshopFile>(header, colorModeData, std::move(imageResources), std::move(lrMaskInfo), imageData);
 }
