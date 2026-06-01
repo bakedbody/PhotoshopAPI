@@ -421,7 +421,7 @@ protected:
 	/// 0 - 255 despite the appearance being 0-100 in photoshop
 	uint8_t m_Opacity{};
 	/// 0 - 255 despite the appearance being 0-100 in photoshop
-	uint8_t m_Fill{};
+	uint8_t m_Fill = 255u;
 
 	uint32_t m_Width{};
 

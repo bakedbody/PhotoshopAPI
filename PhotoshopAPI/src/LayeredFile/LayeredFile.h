@@ -492,7 +492,7 @@ struct LayeredFile
 		bool hasAlpha = false;
 		for (auto& layer : m_Layers)
 		{
-			hasAlpha &= _Impl::has_alpha_recursive(layer);
+			hasAlpha |= _Impl::has_alpha_recursive(layer);
 		}
 
 		uint16_t numChannels = hasAlpha ? 1u : 0u;
