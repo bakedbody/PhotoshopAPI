@@ -489,21 +489,14 @@ struct LayeredFile
 	/// \return The total number of channels in the document.
 	uint16_t num_channels()
 	{
-		bool hasAlpha = false;
-		for (auto& layer : m_Layers)
-		{
-			hasAlpha |= _Impl::has_alpha_recursive(layer);
-		}
-
-		uint16_t numChannels = hasAlpha ? 1u : 0u;
 		if (m_ColorMode == Enum::ColorMode::RGB ||
 			m_ColorMode == Enum::ColorMode::Lab)
 		{
-			numChannels += 3u;
+			return 3u;
 		}
 		else if (m_ColorMode == Enum::ColorMode::CMYK)
 		{
-			numChannels += 4u;
+			return 4u;
 		}
 		else if (
 			m_ColorMode == Enum::ColorMode::Bitmap ||
@@ -513,9 +506,9 @@ struct LayeredFile
 			m_ColorMode == Enum::ColorMode::Multichannel
 			)
 		{
-			numChannels += 1u;
+			return 1u;
 		}
-		return numChannels;
+		return 0u;
 	}
 
 	/// \brief Checks if a layer already exists in the nested structure.

@@ -104,6 +104,37 @@ TEST_CASE("Construct ImageLayer with mask as part of image data")
 	CHECK(layer->has_mask());
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+TEST_CASE("RGB LayeredFile document channel count ignores layer alpha")
+{
+	using namespace NAMESPACE_PSAPI;
+	using type = bpp8_t;
+	constexpr int32_t width = 5;
+	constexpr int32_t height = 7;
+	constexpr int32_t size = width * height;
+
+	LayeredFile<type> file(Enum::ColorMode::RGB, width, height);
+	std::unordered_map<int, std::vector<type>> data =
+	{
+		{-1, std::vector<type>(size, 255)},
+		{0, std::vector<type>(size, 0)},
+		{1, std::vector<type>(size, 0)},
+		{2, std::vector<type>(size, 0)},
+	};
+	auto params = typename Layer<type>::Params
+	{
+		.name = "RGBA Layer",
+		.width = width,
+		.height = height,
+		.colormode = Enum::ColorMode::RGB,
+	};
+
+	file.add_layer(std::make_shared<ImageLayer<type>>(data, params));
+
+	CHECK(file.num_channels() == 3);
+}
+
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
