@@ -83,6 +83,8 @@ Documentation
 
 The full documentation with benchmarks, build instructions and code reference is hosted on the [PhotoshopAPI readthedocs page](https://photoshopapi.readthedocs.io/).
 
+For the verified fmt 11.0.2 workaround used by newer AppleClang wheel builds, see [docs/MACOS_WHEEL_BUILD.md](docs/MACOS_WHEEL_BUILD.md).
+
 
 Requirements
 =============
