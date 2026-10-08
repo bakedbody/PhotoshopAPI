@@ -48,4 +48,7 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
 	target_compile_options(PhotoshopAPI PUBLIC -fexperimental-library)
 	target_link_options(PhotoshopAPI PUBLIC -fexperimental-library)
+
+	# Works around an AppleClang 21 consteval bug in fmt (fmtlib/fmt#4740)
+	target_compile_definitions(PhotoshopAPI PUBLIC FMT_USE_CONSTEVAL=0)
 endif()
