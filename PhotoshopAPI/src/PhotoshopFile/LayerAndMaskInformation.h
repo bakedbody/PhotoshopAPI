@@ -388,6 +388,7 @@ struct LayerInfo : public FileSection
 {
 	std::vector<LayerRecord> m_LayerRecords;
 	std::vector<ChannelImageData> m_ChannelImageData;
+	bool m_HasMergedTransparency = false;
 
 	LayerInfo() = default;
 	LayerInfo(std::vector<LayerRecord> layerRecords, std::vector<ChannelImageData> imageData) : m_LayerRecords(std::move(layerRecords)), m_ChannelImageData(std::move(imageData)) {};

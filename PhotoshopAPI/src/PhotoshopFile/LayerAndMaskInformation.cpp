@@ -981,8 +981,10 @@ void LayerInfo::read(File& document, const FileHeader& header, ProgressCallback&
 	}
 
 	// If this value is negative the first alpha channel of the layer records would hold the merged image result (Image Data Section) alpha channel
-	// which we do not care about
-	uint16_t layerCount = static_cast<uint16_t>(std::abs(ReadBinaryData<int16_t>(document)));
+	// Preserve the sign so merged transparency does not become an extra alpha channel.
+	const int16_t signedLayerCount = ReadBinaryData<int16_t>(document);
+	m_HasMergedTransparency = signedLayerCount < 0;
+	uint16_t layerCount = static_cast<uint16_t>(std::abs(signedLayerCount));
 	// While it may seem counterintuitive to set the callbacks max here, due to the way the data is either stored
 	// on the LayerInfo or in the AdditionalLayerInfo this value will only be set once 
 	callback.setMax(layerCount);
@@ -1116,9 +1118,9 @@ void LayerInfo::write(File& document, const FileHeader& header, ProgressCallback
 	// Write an empty section size, we come back later and fill this out once written
 	uint64_t sizeMarkerOffset = document.getOffset();
 	WriteBinaryDataVariadic<uint32_t, uint64_t>(document, 0u, header.m_Version);
-	// The layer count could be written as a negative value to indicate that the first alpha channel in the file is the merged image data alpha
-	// but we do not bother with that at this point
-	WriteBinaryData(document, static_cast<int16_t>(m_LayerRecords.size()));
+	// Preserve whether the first composite alpha is transparency or an extra channel.
+	const auto layerCount = static_cast<int16_t>(m_LayerRecords.size());
+	WriteBinaryData<int16_t>(document, m_HasMergedTransparency ? -layerCount : layerCount);
 
 	// Loop over the individual layers and compress them while also storing the channel information
 	std::for_each(std::execution::par, m_ChannelImageData.begin(), m_ChannelImageData.end(),

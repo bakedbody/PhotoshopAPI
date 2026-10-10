@@ -4,6 +4,7 @@
 #include "Macros.h"
 #include "Core/TaggedBlocks/TaggedBlock.h"
 #include "LayeredFile/LayerTypes/Layer.h"
+#include "LayeredFile/LayerTypes/TextLayer/TextLayer.h"
 
 #include <variant>
 #include <optional>
@@ -12,6 +13,19 @@
 
 
 PSAPI_NAMESPACE_BEGIN
+
+template <typename T>
+static auto prepare_text_blocks(LayeredFile<T>& file)
+{
+	std::vector<TextLayerDetail::AdvancedTextInput> inputs;
+	for (auto& layer : file.flat_layers())
+		if (auto text = std::dynamic_pointer_cast<TextLayer<T>>(layer))
+			inputs.push_back(text->internal_advanced_text_input());
+	if (file.colormode() != Enum::ColorMode::RGB &&
+		std::any_of(inputs.begin(), inputs.end(), [](const auto& i) { return !i.overrides.dictionary_items.empty(); }))
+		throw std::invalid_argument("Native advanced text currently supports RGB documents only");
+	return TextLayerDetail::prepare_advanced_text(inputs, file.unparsed_blocks());
+}
 
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -28,6 +42,7 @@ LayerAndMaskInformation generate_layermaskinfo(LayeredFile<T>& layeredFile, std:
 template <>
 LayerAndMaskInformation generate_layermaskinfo(LayeredFile<uint8_t>& layeredFile,std::filesystem::path file_path)
 {
+	auto unparsed_blocks = prepare_text_blocks(layeredFile);
 	LayerInfo lrInfo = generate_layerinfo<uint8_t>(layeredFile);
 	// This section is mainly there for backwards compatibility it seems and from initial testing
 	// does not appear to really be relevant for documents
@@ -35,7 +50,6 @@ LayerAndMaskInformation generate_layermaskinfo(LayeredFile<uint8_t>& layeredFile
 
 	std::optional<AdditionalLayerInfo> additional_layer_info = std::nullopt;
 	std::vector<std::shared_ptr<TaggedBlock>> block_ptrs{};
-	auto unparsed_blocks = layeredFile.unparsed_blocks();
 	if (!layeredFile.linked_layers()->empty() || !unparsed_blocks.empty())
 	{
 		auto linked_layer_blocks = layeredFile.linked_layers()->to_photoshop(true, file_path);
@@ -61,6 +75,7 @@ LayerAndMaskInformation generate_layermaskinfo(LayeredFile<uint8_t>& layeredFile
 template <>
 LayerAndMaskInformation generate_layermaskinfo(LayeredFile<uint16_t>& layeredFile, std::filesystem::path file_path)
 {
+	auto unparsed_blocks = prepare_text_blocks(layeredFile);
 	LayerInfo emptyLrInfo{};
 	LayerInfo lrInfo = generate_layerinfo<uint16_t>(layeredFile);
 	// This section is mainly there for backwards compatibility it seems and from initial testing
@@ -78,7 +93,7 @@ LayerAndMaskInformation generate_layermaskinfo(LayeredFile<uint16_t>& layeredFil
 			block_ptrs.push_back(block);
 		}
 	}
-	for (auto& block : layeredFile.unparsed_blocks())
+	for (auto& block : unparsed_blocks)
 	{
 		block_ptrs.push_back(block);
 	}
@@ -94,6 +109,7 @@ LayerAndMaskInformation generate_layermaskinfo(LayeredFile<uint16_t>& layeredFil
 template <>
 LayerAndMaskInformation generate_layermaskinfo(LayeredFile<float32_t>& layeredFile, std::filesystem::path file_path)
 {
+	auto unparsed_blocks = prepare_text_blocks(layeredFile);
 	LayerInfo emptyLrInfo{};
 	LayerInfo lrInfo = generate_layerinfo<float32_t>(layeredFile);
 	// This section is mainly there for backwards compatibility it seems and from initial testing
@@ -111,7 +127,7 @@ LayerAndMaskInformation generate_layermaskinfo(LayeredFile<float32_t>& layeredFi
 			block_ptrs.push_back(block);
 		}
 	}
-	for (auto& block : layeredFile.unparsed_blocks())
+	for (auto& block : unparsed_blocks)
 	{
 		block_ptrs.push_back(block);
 	}
@@ -146,7 +162,9 @@ LayerInfo generate_layerinfo(LayeredFile<T>& layeredFile)
 		imageData.push_back(std::move(lrImageData));
 	}
 
-	return LayerInfo(std::move(layerRecords), std::move(imageData));
+	LayerInfo info(std::move(layerRecords), std::move(imageData));
+	info.m_HasMergedTransparency = layeredFile.has_merged_transparency();
+	return info;
 }
 
 

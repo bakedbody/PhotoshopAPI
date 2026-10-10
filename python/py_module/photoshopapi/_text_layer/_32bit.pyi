@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Literal, Optional, Tuple
 import numpy
 
 from .._layer import Layer_32bit
@@ -14,6 +14,23 @@ from ._proxies import (
 import psapi.enum
 
 class TextLayer_32bit(Layer_32bit):
+
+    def set_advanced_text_style(
+        self, *, stylistic_alternates: Optional[bool] = None,
+        old_style: Optional[bool] = None,
+        auto_kern: Optional[Literal["manual", "metrics", "optical"]] = None,
+        fractions: Optional[bool] = None, ordinals: Optional[bool] = None,
+        swash: Optional[bool] = None, titling: Optional[bool] = None,
+        ornaments: Optional[bool] = None, slashed_zero: Optional[bool] = None,
+        contextual_ligatures: Optional[bool] = None,
+    ) -> None:
+        """Layer-wide native Txt2 overrides; None preserves existing values.
+
+        New Txt2 generation requires RGB point text (horizontal or vertical). Existing Txt2
+        frames are preserved. Photoshop recomposes on opening; this API does not
+        rasterize text or compute accurate glyph bounds.
+        """
+        ...
 
     def __init__(
         self: TextLayer_32bit,

@@ -291,7 +291,7 @@ TEST_CASE("Check Roundtripping Compression")
 	static std::vector<std::filesystem::path> fileNames =
 	{
 		"Compression_Mixed_8bit.psd",
-		"Compression_Mixed_8bit.psd",
+		"Compression_Mixed_8bit.psb",
 		"Compression_RAW_8bit.psb",
 		"Compression_RAW_8bit.psd",
 		"Compression_RLE_8bit.psb",

@@ -229,6 +229,41 @@ void declare_text_layer(py::module& m, const std::string& extension)
     )pbdoc");
 
     // -- wire up every section --
+    text_layer.def("set_advanced_text_style", [](Class& layer,
+        std::optional<bool> stylistic_alternates, std::optional<bool> old_style,
+        std::optional<std::string> auto_kern, std::optional<bool> fractions,
+        std::optional<bool> ordinals, std::optional<bool> swash,
+        std::optional<bool> titling, std::optional<bool> ornaments,
+        std::optional<bool> slashed_zero, std::optional<bool> contextual_ligatures)
+    {
+        AdvancedTextStyle style;
+        style.stylistic_alternates = stylistic_alternates;
+        style.old_style = old_style;
+        if (auto_kern)
+        {
+            if (*auto_kern == "manual") style.auto_kern = TextAutoKern::Manual;
+            else if (*auto_kern == "metrics") style.auto_kern = TextAutoKern::Metrics;
+            else if (*auto_kern == "optical") style.auto_kern = TextAutoKern::Optical;
+            else throw std::invalid_argument("auto_kern must be manual, metrics or optical");
+        }
+        style.fractions = fractions;
+        style.ordinals = ordinals;
+        style.swash = swash;
+        style.titling = titling;
+        style.ornaments = ornaments;
+        style.slashed_zero = slashed_zero;
+        style.contextual_ligatures = contextual_ligatures;
+        layer.set_advanced_text_style(style);
+    }, py::kw_only(), py::arg("stylistic_alternates") = py::none(),
+       py::arg("old_style") = py::none(), py::arg("auto_kern") = py::none(),
+       py::arg("fractions") = py::none(), py::arg("ordinals") = py::none(),
+       py::arg("swash") = py::none(), py::arg("titling") = py::none(),
+       py::arg("ornaments") = py::none(), py::arg("slashed_zero") = py::none(),
+       py::arg("contextual_ligatures") = py::none(),
+       "Set layer-wide native Txt2 overrides; None preserves a property. "
+       "New Txt2 generation currently requires RGB point text (horizontal or vertical). "
+       "Photoshop recomposes on opening; no Photoshop process is needed to write.");
+
     bind_textlayer_core_apis<T>(text_layer);
     bind_textlayer_style_run_apis<T>(text_layer);
     bind_textlayer_style_normal_apis<T>(text_layer);

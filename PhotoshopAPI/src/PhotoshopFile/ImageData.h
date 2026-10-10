@@ -90,17 +90,17 @@ struct ImageData : public FileSection
 		if (header.m_Depth == Enum::BitDepth::BD_8)
 		{
 			std::vector<uint8_t> emptyData(static_cast<uint64_t>(header.m_Width) * header.m_Height, 0u);
-			ImageDataImpl::writeCompressedData(document, header, m_NumChannels, std::move(emptyData));
+			ImageDataImpl::writeCompressedData(document, header, header.m_NumChannels, std::move(emptyData));
 		}
 		else if (header.m_Depth == Enum::BitDepth::BD_16)
 		{
 			std::vector<uint16_t> emptyData(static_cast<uint64_t>(header.m_Width) * header.m_Height, 0u);
-			ImageDataImpl::writeCompressedData(document, header, m_NumChannels, std::move(emptyData));
+			ImageDataImpl::writeCompressedData(document, header, header.m_NumChannels, std::move(emptyData));
 		}
 		else if (header.m_Depth == Enum::BitDepth::BD_32)
 		{
 			std::vector<float32_t> emptyData(static_cast<uint64_t>(header.m_Width) * header.m_Height, 0u);
-			ImageDataImpl::writeCompressedData(document, header, m_NumChannels, std::move(emptyData));
+			ImageDataImpl::writeCompressedData(document, header, header.m_NumChannels, std::move(emptyData));
 		}
 	}
 
@@ -129,10 +129,17 @@ struct ImageData : public FileSection
 	ImageData() = default;
 
 	/// Initialize the ImageData with a given number of channels to write out. We do this rather than deducting
-	/// from the header as the header counts alpha channels while this does not!
+	/// from individual layers: composite channels and layer alpha channels are independent.
 	ImageData(uint16_t numChannels) : m_NumChannels(numChannels) {};
 
 	bool has_preserved_data() const noexcept { return m_HasPreservedData; }
+	uint16_t num_channels() const noexcept { return m_NumChannels; }
+
+	bool matches_document(uint64_t width, uint64_t height, Enum::BitDepth depth, Enum::ColorMode color_mode) const noexcept
+	{
+		return m_HasPreservedData && width == m_SourceWidth && height == m_SourceHeight &&
+			depth == m_SourceDepth && color_mode == m_SourceColorMode;
+	}
 
 private:
 	inline bool can_roundtrip(const FileHeader& header) const noexcept

@@ -151,7 +151,11 @@ struct LayeredFile
 	/// purposes.
 	std::vector<std::shared_ptr<TaggedBlock>> unparsed_blocks() const noexcept { return m_UnparsedBlocks; }
 
-	ImageData image_data() const noexcept { return m_ImageData; }
+	const ImageData& image_data() const noexcept { return m_ImageData; }
+	bool has_merged_transparency() const noexcept
+	{
+		return m_HasMergedTransparency && m_ImageData.matches_document(m_Width, m_Height, m_BitDepth, m_ColorMode);
+	}
 
 	LayeredFile() = default;
 
@@ -172,6 +176,20 @@ struct LayeredFile
 		m_Width = document->m_Header.m_Width;
 		m_Height = document->m_Header.m_Height;
 		ImageData preservedImageData = document->m_ImageData;
+		m_HasMergedTransparency = document->m_LayerMaskInfo.m_LayerInfo.m_HasMergedTransparency;
+		if (const auto& info = document->m_LayerMaskInfo.m_AdditionalLayerInfo)
+		{
+			if (m_BitDepth == Enum::BitDepth::BD_16)
+			{
+				if (auto block = info->get_tagged_block<Lr16TaggedBlock>())
+					m_HasMergedTransparency = block->m_Data.m_HasMergedTransparency;
+			}
+			else if (m_BitDepth == Enum::BitDepth::BD_32)
+			{
+				if (auto block = info->get_tagged_block<Lr32TaggedBlock>())
+					m_HasMergedTransparency = block->m_Data.m_HasMergedTransparency;
+			}
+		}
 
 		// Extract the ICC Profile if it exists on the document, otherwise it will simply be empty
 		m_ICCProfile = _Impl::read_icc_profile(document.get());
@@ -489,6 +507,11 @@ struct LayeredFile
 	/// \return The total number of channels in the document.
 	uint16_t num_channels()
 	{
+		// Document channels describe the composite, not individual layer alpha channels.
+		if (m_ImageData.matches_document(m_Width, m_Height, m_BitDepth, m_ColorMode))
+		{
+			return m_ImageData.num_channels();
+		}
 		if (m_ColorMode == Enum::ColorMode::RGB ||
 			m_ColorMode == Enum::ColorMode::Lab)
 		{
@@ -689,6 +712,7 @@ private:
 	std::vector<std::shared_ptr<TaggedBlock>> m_UnparsedBlocks;
 
 	ImageData m_ImageData;
+	bool m_HasMergedTransparency = false;
 
 	std::vector<std::shared_ptr<Layer<T>>> generate_flattened_layers_impl(const LayerOrder order)
 	{

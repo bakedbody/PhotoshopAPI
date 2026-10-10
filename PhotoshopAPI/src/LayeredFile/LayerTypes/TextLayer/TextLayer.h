@@ -36,6 +36,7 @@
 #include "TextLayerWarpMixin.h"
 #include "TextLayerProxiesMixin.h"
 #include "TextLayerRangeStyleMixin.h"
+#include "TextLayerAdvancedStyle.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -129,6 +130,24 @@ struct TextLayer :
 			text, font_postscript_name, font_size, fill_color,
 			position_x, position_y, box_width, box_height);
 		m_TypeToolBlocks.push_back(std::move(tysh_block));
+		m_NewTextLayer = true;
+	}
+
+	/// Apply the specified advanced properties to all character runs. The document
+	/// writer emits native Txt2 and requests Photoshop to recompose changed text.
+	/// This does not rasterize text or calculate glyph bounds in PhotoshopAPI.
+	void set_advanced_text_style(const AdvancedTextStyle& style)
+	{
+		for (const auto& item : style.features().dictionary_items)
+			EngineData::insert_dict_value(m_AdvancedOverrides, item.first, item.second);
+	}
+
+	TextLayerDetail::AdvancedTextInput internal_advanced_text_input() const
+	{
+		return { m_TypeToolBlocks.empty() ? nullptr : m_TypeToolBlocks.front(),
+			m_AdvancedOverrides, m_NewTextLayer,
+			!m_AdvancedOverrides.dictionary_items.empty() && this->is_point_text(),
+			!m_AdvancedOverrides.dictionary_items.empty() && this->is_vertical() };
 	}
 
 	/// Convenience factory that builds a minimal TextLayer without a full Params struct.
@@ -572,6 +591,8 @@ private:
 	}
 
 	std::vector<std::shared_ptr<TypeToolTaggedBlock>> m_TypeToolBlocks{};
+	EngineData::Value m_AdvancedOverrides = EngineData::make_dict();
+	bool m_NewTextLayer = false;
 };
 
 
