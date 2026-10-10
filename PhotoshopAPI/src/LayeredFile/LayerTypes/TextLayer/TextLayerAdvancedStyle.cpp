@@ -137,7 +137,7 @@ constexpr Mapping char_map[] = {
     {"FontSize","1"}, {"FauxBold","2"}, {"FauxItalic","3"}, {"AutoLeading","4"},
     {"Leading","5"}, {"HorizontalScale","6"}, {"VerticalScale","7"}, {"Tracking","8"},
     {"BaselineShift","9"}, {"FontCaps","12"}, {"FontBaseline","13"},
-    {"Ligatures","18"}, {"DLigatures","19"}, {"Tsume","36"},
+    {"Ligatures","18"}, {"DLigatures","19"}, {"BaselineDirection","35"}, {"Tsume","36"},
     {"StyleRunAlignment","37"}, {"Language","38"}, {"NoBreak","52"},
     {"FillFlag","56"}, {"StrokeFlag","57"}, {"FillFirst","58"}, {"OutlineWidth","63"}
 };

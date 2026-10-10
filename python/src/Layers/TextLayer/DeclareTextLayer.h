@@ -229,6 +229,7 @@ void declare_text_layer(py::module& m, const std::string& extension)
     )pbdoc");
 
     // -- wire up every section --
+    text_layer.attr("native_txt2_preserves_baseline_direction") = py::bool_(true);
     text_layer.def("set_advanced_text_style", [](Class& layer,
         std::optional<bool> stylistic_alternates, std::optional<bool> old_style,
         std::optional<std::string> auto_kern, std::optional<bool> fractions,

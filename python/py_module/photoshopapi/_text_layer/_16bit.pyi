@@ -14,6 +14,7 @@ from ._proxies import (
 import psapi.enum
 
 class TextLayer_16bit(Layer_16bit):
+    native_txt2_preserves_baseline_direction: bool
 
     def set_advanced_text_style(
         self, *, stylistic_alternates: Optional[bool] = None,

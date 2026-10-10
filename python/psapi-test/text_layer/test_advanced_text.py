@@ -57,6 +57,22 @@ def test_no_options_keeps_legacy_output(tmp_path):
     assert b"oldTextAge" not in path.read_bytes()
 
 
+@pytest.mark.parametrize("direction,value", [("Vertical", 1), ("CrossStream", 2)])
+def test_native_txt2_preserves_baseline_direction(tmp_path, direction, value):
+    layer = make_text()
+    layer.set_orientation(psapi.enum.WritingDirection.Vertical)
+    direction = getattr(psapi.enum.BaselineDirection, direction)
+    layer.set_style_run_baseline_direction(0, direction)
+    layer.set_advanced_text_style(auto_kern="metrics")
+    doc = psapi.LayeredFile_8bit(psapi.enum.ColorMode.rgb, 400, 200)
+    doc.add_layer(layer)
+    path = tmp_path / "baseline.psd"
+    doc.write(str(path))
+    # Character-run feature /35, not merely the document's default style.
+    match = re.search(rb"/1\s+32\.0\s.*?/35\s+(\d+)", txt2(path), re.S)
+    assert match and int(match[1]) == value
+
+
 def test_invalid_mode_and_unverified_frame_are_explicit(tmp_path):
     layer = make_text()
     with pytest.raises(ValueError, match="auto_kern"):
