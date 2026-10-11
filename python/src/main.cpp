@@ -7,6 +7,7 @@
 #include "Layers/DeclareImageLayer.h"
 #include "Layers/DeclareGroupLayer.h"
 #include "Layers/TextLayer/DeclareTextLayer.h"
+#include "DeclareTextBounds.h"
 #include "Layers/DeclareSmartObjectLayer.h"
 #include "Mixins/DeclareMaskMixin.h"
 #include "DeclareSmartObjectWarp.h"
@@ -58,6 +59,7 @@ PYBIND11_MODULE(photoshopapi, m)
 	declare_text_layer_proxies<bpp16_t>(m, "_16bit");
 	declare_text_layer_proxies<bpp32_t>(m, "_32bit");
 
+    declare_text_bounds(m);
 	declare_text_layer<bpp8_t>(m, "_8bit");
 	declare_text_layer<bpp16_t>(m, "_16bit");
 	declare_text_layer<bpp32_t>(m, "_32bit");

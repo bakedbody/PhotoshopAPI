@@ -7,7 +7,9 @@
     "fmt",
     "libdeflate",
     "stduuid",
-    "eigen3"
+    "eigen3",
+    "freetype",
+    "harfbuzz"
   ],
   "overrides": [
     {

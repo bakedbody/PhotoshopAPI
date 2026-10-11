@@ -11,3 +11,5 @@ from ._text_layer import *
 from ._smart_object_layer import *
 from ._smart_object_warp import *
 from ._layered_file import *
+
+from ._text_bounds import TextBoundsEngine as TextBoundsEngine

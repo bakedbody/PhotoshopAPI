@@ -1,6 +1,8 @@
 # Define the project
 # --------------------------------------------------------------------------
 project(PhotoshopAPI)
+find_package(Freetype REQUIRED)
+find_package(harfbuzz CONFIG REQUIRED)
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 add_library(PhotoshopAPI STATIC ${MY_SOURCES})
@@ -11,6 +13,8 @@ set_property(TARGET blosc2_static PROPERTY POSITION_INDEPENDENT_CODE 1)
 target_include_directories(PhotoshopAPI PUBLIC include src)
 target_include_directories(PhotoshopAPI PRIVATE src/Util)
 target_link_libraries(PhotoshopAPI PUBLIC 
+    Freetype::Freetype
+    harfbuzz::harfbuzz
     OpenImageIO::OpenImageIO
     Eigen3::Eigen
     mio::mio-headers 
