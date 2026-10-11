@@ -22,10 +22,7 @@ void ProtectedSettingTaggedBlock::read(File& document, const uint64_t offset, co
 		return;
 	}
 
-	auto flags = ReadBinaryData<uint8_t>(document);
-	m_IsLocked = flags & 128u;	// Check if the flags at bit 7 are true
-	// Skip the last 3 bytes
-	document.skip(3u);
+	m_ProtectionFlags = ReadBinaryData<uint32_t>(document);
 }
 
 
@@ -38,15 +35,7 @@ void ProtectedSettingTaggedBlock::write(File& document, [[maybe_unused]] const F
 
 	Impl::ScopedLengthBlock<uint32_t> len_block(document, padding);
 
-	if (m_IsLocked)
-	{
-		WriteBinaryData<uint8_t>(document, 128u);
-		WritePadddingBytes(document, 3u);
-	}
-	else
-	{
-		WritePadddingBytes(document, 4u);
-	}
+	WriteBinaryData<uint32_t>(document, m_ProtectionFlags);
 }
 
 

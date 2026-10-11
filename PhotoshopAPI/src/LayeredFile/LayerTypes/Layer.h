@@ -87,12 +87,24 @@ struct Layer : public MaskMixin<T>
 	/// The blendmode of the layer, the `Passthrough` blendmode is only valid for groups
 	void blendmode(Enum::BlendMode blend_mode) noexcept { m_BlendMode = blend_mode; }
 	
-	/// Whether the layers' pixel values are locked. This is currently an all or nothing setting
+	/// Photoshop's independent Lock All bit; changing it preserves the partial locks.
 	bool& locked() noexcept { return m_IsLocked; }
-	/// Whether the layers' pixel values are locked. This is currently an all or nothing setting
 	bool locked() const noexcept { return m_IsLocked; }
-	/// Whether the layers' pixel values are locked. This is currently an all or nothing setting
 	void locked(bool is_locked) noexcept { m_IsLocked = is_locked; }
+
+	bool transparency_locked() const noexcept { return (m_ProtectionFlags & ProtectedSettingTaggedBlock::Transparency) != 0; }
+	void transparency_locked(bool value) noexcept { set_protection_flag(ProtectedSettingTaggedBlock::Transparency, value); }
+	bool pixels_locked() const noexcept { return (m_ProtectionFlags & ProtectedSettingTaggedBlock::Pixels) != 0; }
+	void pixels_locked(bool value) noexcept { set_protection_flag(ProtectedSettingTaggedBlock::Pixels, value); }
+	bool position_locked() const noexcept { return (m_ProtectionFlags & ProtectedSettingTaggedBlock::Position) != 0; }
+	void position_locked(bool value) noexcept { set_protection_flag(ProtectedSettingTaggedBlock::Position, value); }
+
+	uint32_t protection_flags() const noexcept
+	{
+		// Keep the existing bool-reference locked() API authoritative for Lock All.
+		return (m_ProtectionFlags & ~ProtectedSettingTaggedBlock::All)
+			| (m_IsLocked ? ProtectedSettingTaggedBlock::All : 0u);
+	}
 
 	/// Visibility toggle of the layer
 	bool& visible() noexcept { return m_IsVisible; }
@@ -223,6 +235,9 @@ struct Layer : public MaskMixin<T>
 	{
 		m_ColorMode = header.m_ColorMode;
 		m_LayerName = layerRecord.m_LayerName.getString();
+		// Legacy files may only carry the layer-record transparency bit.
+		m_ProtectionFlags = layerRecord.m_BitFlags.m_isTransparencyProtected
+			? ProtectedSettingTaggedBlock::Transparency : 0u;
 		// To parse the blend mode we must actually check for the presence of the sectionDivider blendmode as this overrides the layerRecord
 		// blendmode if it is present
 		if (!layerRecord.m_AdditionalLayerInfo.has_value())
@@ -249,7 +264,8 @@ struct Layer : public MaskMixin<T>
 			// Parse the layer protection settings
 			if (auto protection_settings = additional_layer_info.getTaggedBlock<ProtectedSettingTaggedBlock>(Enum::TaggedBlockKey::lrProtectedSetting))
 			{
-				m_IsLocked = protection_settings.value()->m_IsLocked;
+				m_ProtectionFlags = protection_settings.value()->m_ProtectionFlags;
+				m_IsLocked = (m_ProtectionFlags & ProtectedSettingTaggedBlock::All) != 0;
 			}
 			else
 			{
@@ -394,7 +410,7 @@ struct Layer : public MaskMixin<T>
 			m_BlendMode,
 			m_Opacity,
 			static_cast<uint8_t>(m_IsClippingMask),
-			LayerRecords::BitFlags(m_IsLocked, !m_IsVisible, false),
+			LayerRecords::BitFlags(pixel_data_locked(), !m_IsVisible, false),
 			std::nullopt,	// LayerMaskData
 			Layer<T>::generate_blending_ranges(),	// Generate some defaults
 			std::move(taggedBlocks)		// Additional layer information
@@ -414,6 +430,17 @@ protected:
 
 	/// Whether the layer is locked inside of photoshop
 	bool m_IsLocked = false;
+	uint32_t m_ProtectionFlags = 0u;
+
+	void set_protection_flag(uint32_t mask, bool value) noexcept
+	{
+		m_ProtectionFlags = value ? (m_ProtectionFlags | mask) : (m_ProtectionFlags & ~mask);
+	}
+
+	bool pixel_data_locked() const noexcept
+	{
+		return m_IsLocked || transparency_locked() || pixels_locked();
+	}
 
 	/// Whether the layer is a clipping mask to the layer below.
 	bool m_IsClippingMask = false;
@@ -498,7 +525,7 @@ protected:
 		block_vec.push_back(unicode_layer_name_tagged_block);
 
 		// Generate our LockedSettings Tagged block
-		const auto protected_setting_tagged_block = std::make_shared<ProtectedSettingTaggedBlock>(m_IsLocked);
+		const auto protected_setting_tagged_block = std::make_shared<ProtectedSettingTaggedBlock>(protection_flags());
 		block_vec.push_back(protected_setting_tagged_block);
 
 		const auto sheet_color_tagged_block = std::make_shared<SheetColorTaggedBlock>(m_LayerColor);

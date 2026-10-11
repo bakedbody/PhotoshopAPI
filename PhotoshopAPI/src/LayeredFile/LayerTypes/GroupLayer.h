@@ -151,7 +151,7 @@ struct GroupLayer final: public Layer<T>
 	{
 		PascalString lrName = Layer<T>::generate_name();
 		ChannelExtents extents = generate_extents(ChannelCoordinates(Layer<T>::m_Width, Layer<T>::m_Height, Layer<T>::m_CenterX, Layer<T>::m_CenterY));
-		LayerRecords::BitFlags bitFlags = LayerRecords::BitFlags(Layer<T>::m_IsLocked, !Layer<T>::m_IsVisible, false);
+		LayerRecords::BitFlags bitFlags = LayerRecords::BitFlags(Layer<T>::pixel_data_locked(), !Layer<T>::m_IsVisible, false);
 		std::optional<LayerRecords::LayerMaskData> lrMaskData = Layer<T>::internal_generate_mask_data();
 		LayerRecords::LayerBlendingRanges blendingRanges = Layer<T>::generate_blending_ranges();
 

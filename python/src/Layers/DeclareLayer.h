@@ -101,6 +101,9 @@ void declare_layer(py::module& m, const std::string& extension) {
     layer.def_property("center_x", [](const Class& self) { return self.center_x(); }, [](Class& self, float center_x) { self.center_x(center_x); });
     layer.def_property("center_y", [](const Class& self) { return self.center_y(); }, [](Class& self, float center_y) { self.center_y(center_y); });
     layer.def_property("is_locked", [](const Class& self) { return self.locked(); }, [](Class& self, bool locked) { self.locked(locked); });
+    layer.def_property("is_transparency_locked", [](const Class& self) { return self.transparency_locked(); }, [](Class& self, bool value) { self.transparency_locked(value); });
+    layer.def_property("is_pixels_locked", [](const Class& self) { return self.pixels_locked(); }, [](Class& self, bool value) { self.pixels_locked(value); });
+    layer.def_property("is_position_locked", [](const Class& self) { return self.position_locked(); }, [](Class& self, bool value) { self.position_locked(value); });
     layer.def_property("is_visible", [](const Class& self) { return self.visible(); }, [](Class& self, bool visible) { self.visible(visible); });
     layer.def_property("clipping_mask", [](const Class& self) { return self.clipping_mask(); }, [](Class& self, bool is_clipped) { self.clipping_mask(is_clipped); });
     layer.def_property("display_color", [](const Class& self) { return self.display_color(); }, [](Class& self, Enum::LayerColor layer_color) { self.display_color(layer_color); });

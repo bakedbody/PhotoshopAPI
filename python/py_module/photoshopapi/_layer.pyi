@@ -115,6 +115,30 @@ class Layer_8bit:
         ...
 
     @property
+    def is_transparency_locked(self: Layer_8bit) -> bool:
+        ...
+
+    @is_transparency_locked.setter
+    def is_transparency_locked(self: Layer_8bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_pixels_locked(self: Layer_8bit) -> bool:
+        ...
+
+    @is_pixels_locked.setter
+    def is_pixels_locked(self: Layer_8bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_position_locked(self: Layer_8bit) -> bool:
+        ...
+
+    @is_position_locked.setter
+    def is_position_locked(self: Layer_8bit, value: bool) -> None:
+        ...
+
+    @property
     def mask_disabled(self: Layer_8bit) -> bool:
         ...
 
@@ -279,6 +303,30 @@ class Layer_16bit:
 
     @is_locked.setter
     def is_locked(self: Layer_16bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_transparency_locked(self: Layer_16bit) -> bool:
+        ...
+
+    @is_transparency_locked.setter
+    def is_transparency_locked(self: Layer_16bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_pixels_locked(self: Layer_16bit) -> bool:
+        ...
+
+    @is_pixels_locked.setter
+    def is_pixels_locked(self: Layer_16bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_position_locked(self: Layer_16bit) -> bool:
+        ...
+
+    @is_position_locked.setter
+    def is_position_locked(self: Layer_16bit, value: bool) -> None:
         ...
 
     @property
@@ -447,6 +495,30 @@ class Layer_32bit:
 
     @is_locked.setter
     def is_locked(self: Layer_32bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_transparency_locked(self: Layer_32bit) -> bool:
+        ...
+
+    @is_transparency_locked.setter
+    def is_transparency_locked(self: Layer_32bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_pixels_locked(self: Layer_32bit) -> bool:
+        ...
+
+    @is_pixels_locked.setter
+    def is_pixels_locked(self: Layer_32bit, value: bool) -> None:
+        ...
+
+    @property
+    def is_position_locked(self: Layer_32bit) -> bool:
+        ...
+
+    @is_position_locked.setter
+    def is_position_locked(self: Layer_32bit, value: bool) -> None:
         ...
 
     @property

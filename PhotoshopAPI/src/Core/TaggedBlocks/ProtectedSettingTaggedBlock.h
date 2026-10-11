@@ -12,14 +12,22 @@
 PSAPI_NAMESPACE_BEGIN
 
 
-/// The layers' pixel protection settings. This is internally a uint32_t of which only the first byte seems to hold relevant 
-/// information with the rest being for padding and/or aligment. 
+/// Full 32-bit lspf protection mask. Unrecognized bits are retained on write.
 struct ProtectedSettingTaggedBlock : TaggedBlock
 {
-	bool m_IsLocked = false;	// 01000000 of the first byte
+	static constexpr uint32_t Transparency = 0x00000001u;
+	static constexpr uint32_t Pixels = 0x00000002u;
+	static constexpr uint32_t Position = 0x00000004u;
+	static constexpr uint32_t All = 0x80000000u;
+
+	uint32_t m_ProtectionFlags = 0u;
 
 	ProtectedSettingTaggedBlock() = default;
-	ProtectedSettingTaggedBlock(bool isLocked) : m_IsLocked(isLocked) {}
+	explicit ProtectedSettingTaggedBlock(uint32_t flags) : m_ProtectionFlags(flags)
+	{
+		m_Key = Enum::TaggedBlockKey::lrProtectedSetting;
+	}
+	ProtectedSettingTaggedBlock(bool isLocked) : ProtectedSettingTaggedBlock(isLocked ? All : 0u) {}
 
 	void read(File& document, const uint64_t offset, const Signature signature);
 	void write(File& document, const FileHeader& header, ProgressCallback& callback, const uint16_t padding = 1u) override;

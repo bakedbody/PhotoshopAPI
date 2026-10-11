@@ -495,7 +495,7 @@ struct TextLayer :
 		PascalString name = Layer<T>::generate_name();
 		ChannelExtents extents = generate_extents(ChannelCoordinates(Layer<T>::m_Width, Layer<T>::m_Height, Layer<T>::m_CenterX, Layer<T>::m_CenterY));
 
-		LayerRecords::BitFlags bit_flags(Layer<T>::m_IsLocked, !Layer<T>::m_IsVisible, false);
+		LayerRecords::BitFlags bit_flags(Layer<T>::pixel_data_locked(), !Layer<T>::m_IsVisible, false);
 		std::optional<LayerRecords::LayerMaskData> lr_mask_data = Layer<T>::internal_generate_mask_data();
 		LayerRecords::LayerBlendingRanges blending_ranges = Layer<T>::generate_blending_ranges();
 
